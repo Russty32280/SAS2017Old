@@ -125,6 +125,39 @@ def LEDColor(Color):
 		return "-1"
 
 
+#######################################
+# Channel Definitions
+# Each sensor will have its channel in
+# which we can call upon its specific 
+# function.
+#######################################
+
+def ChannelSelect(ChanID,*args):
+	if ChanID == "1":
+		data = TempRead()
+	elif ChanID == "2":
+		data = HumidRead()
+	elif ChanID == "3":
+		data = EEPROMRead(args[0],args[1])		
+	elif ChanID == "4":
+		data = EEPROMWrite(args[0],args[1],args[2])
+	elif ChanID == "5":
+		data = LED(0,args[0])
+	elif ChanID == "6":
+		data = LED(1, args[0])
+	elif ChanID == "7":
+		data = LED(2, args[0])
+	elif ChanID == "8":
+		data = LED(3, args[0])
+	elif ChanID == "9":
+		data = LEd(4, args[0])
+	else:
+		data = "Error"
+	return data
+		
+
+ 
+
 
 #######################################
 # TIM Functions
@@ -135,13 +168,6 @@ def LEDColor(Color):
 while 1:
 	msg = ser.readline()
 	UARTData = msg.split(",")
-	if UARTData[0] == "Temperature\r":
-		Data = TempRead()
-		ser.write(str(Data))	
-	elif UARTData[0] == "Humidity\r":
-		Data = HumidRead()
-		ser.write(str(Data))
-	elif UARTData[0] == "LED":
-		LED(UARTData[1], UARTData[2][:-1])	
-
+	if UARTData[0] == "128":
+		ChannelSelect(UARTData.pop(0))
 	
