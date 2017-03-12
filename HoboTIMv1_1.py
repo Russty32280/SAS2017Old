@@ -3,6 +3,11 @@ import serial
 import smbus
 
 
+#########################################
+# Initializing UART Port                #
+# Parameters as close to -2 as possible #
+#########################################
+
 ser = serial.Serial(
 	
 	port = '/dev/ttyS0',
@@ -14,6 +19,11 @@ ser = serial.Serial(
 )
 
 
+
+########################################
+# Initializing I2C Bus
+########################################
+
 bus = smbus.SMBus(1)
 
 
@@ -22,7 +32,10 @@ EEPROMAddress = 0x50
 LEDAddress = 0x67
 
 
+
+#######################################
 #Initialize LED States
+#######################################
 LED0 = 0b000000
 LED1 = 0b000000
 LED2 = 0b000000
@@ -37,6 +50,14 @@ bus.write_byte_data(LEDAddress, 0x09, 0x00)
 
 
 
+
+#######################################
+# Sensor/Actuator Functions
+# These are specific to the sensors which are
+# being utilized. Depending on your implementation
+# you will need to adjust or completely change
+# these functions.
+#######################################
 
 def TempRead():
 	rawtemp = bus.read_word_data(TEMPHUMIDAddress, 0xE0)
@@ -102,6 +123,14 @@ def LEDColor(Color):
 	else:
 		print "Error with Color"
 		return "-1"
+
+
+
+#######################################
+# TIM Functions
+#######################################
+
+
 		
 while 1:
 	msg = ser.readline()
