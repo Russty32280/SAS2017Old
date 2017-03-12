@@ -79,7 +79,8 @@ def EEPROMSingleRead(AddressMSB, AddressLSB):
 	return data
 
 def EEPROMSingleWrite(AddressMSB, AddressLSB, Data):
-	status = bus.write_block_data(AddressMSB, AddressLSB, Data)
+	print Data
+	status = bus.write_i2c_block_data(EEPROMAddress, AddressMSB, [AddressLSB, Data])
 	return status
 
 def LED(LEDNumber, Color):
@@ -92,6 +93,7 @@ def LED(LEDNumber, Color):
 	if LEDNumber == "0":
 		LED0 = LEDColor(Color)
 	elif LEDNumber == "1":
+		print "changing led1"
 		LED1 = LEDColor(Color)
 	elif LEDNumber == "2":
 		LED2 = LEDColor(Color)
@@ -120,6 +122,16 @@ def LEDColor(Color):
 		return 0b000100
 	elif Color == "Blue":
 		return 0b010000
+	elif Color == "Purple":
+		return 0b010001
+	elif Color == "White":
+		return 0b010101
+	elif Color == "Yellow":
+		return 0b000101
+	elif Color == "Cyan":
+		return 0b010100
+	elif Color == "Off":
+		return 0b000000
 	else:
 		print "Error with Color"
 		return "-1"
@@ -132,25 +144,29 @@ def LEDColor(Color):
 # function.
 #######################################
 
-def ChannelSelect(ChanID,*args):
-	if ChanID == "1":
+def ChannelSelect(msg):
+	ChanID = msg[0]
+	print ChanID
+	if ChanID == "1" or ChanID == "1\r":
+		print "Chan1 Read"
 		data = TempRead()
-	elif ChanID == "2":
+	elif ChanID == "2" or ChanID == "2\r":
+		print "Chan2 Read"
 		data = HumidRead()
-	elif ChanID == "3":
-		data = EEPROMRead(args[0],args[1])		
-	elif ChanID == "4":
-		data = EEPROMWrite(args[0],args[1],args[2])
+	elif ChanID == "3" or ChanID == "3\r":
+		data = EEPROMSingleRead(int(msg[1],16),int(msg[2],16))		
+	elif ChanID == "4" or ChanID == "4\r":
+		data = EEPROMSingleWrite(int(msg[1],16),int(msg[2],16),int(msg[3],16))
 	elif ChanID == "5":
-		data = LED(0,args[0])
+		data = LED("0",msg[1][:-1])
 	elif ChanID == "6":
-		data = LED(1, args[0])
+		data = LED("1",msg[1][:-1])
 	elif ChanID == "7":
-		data = LED(2, args[0])
+		data = LED("2",msg[1][:-1])
 	elif ChanID == "8":
-		data = LED(3, args[0])
+		data = LED("3",msg[1][:-1])
 	elif ChanID == "9":
-		data = LEd(4, args[0])
+		data = LED("4",msg[1][:-1])
 	else:
 		data = "Error"
 	return data
@@ -169,5 +185,7 @@ while 1:
 	msg = ser.readline()
 	UARTData = msg.split(",")
 	if UARTData[0] == "128":
-		ChannelSelect(UARTData.pop(0))
-	
+		UARTData.pop(0)
+		print UARTData
+		data = ChannelSelect(UARTData)
+		ser.write(str(UARTData)+","+str(data))	
