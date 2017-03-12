@@ -307,17 +307,6 @@ def WriteTransducerSampleDataToAChannelOfATIM(timId, channelId, timeout, samplin
 		errorCode = 'p'
 		print('you wrote it')
 		errorCode=readlineCR(UARTport)	
-		
-		#if dataValue == '1':
-                #        io.output(Channel4_GPIO, True)
-                #        ErrorCode = 0
-                #        print 'LED On'
-                #elif dataValue == '0':
-                #        io.output(Channel4_GPIO, False)
-                #        ErrorCode = 0
-                #        print 'LED OFF'
-                #else:
-                #        ErrorCode = 1
         return {'errorCode':errorCode}
 
 
