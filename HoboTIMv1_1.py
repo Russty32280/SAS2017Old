@@ -147,25 +147,25 @@ def LEDColor(Color):
 def ChannelSelect(msg):
 	ChanID = msg[0]
 	print ChanID
-	if ChanID == "1" or ChanID == "1\r":
+	if ChanID == "001" or ChanID == "001\r":
 		print "Chan1 Read"
 		data = TempRead()
-	elif ChanID == "2" or ChanID == "2\r":
+	elif ChanID == "002" or ChanID == "002\r":
 		print "Chan2 Read"
 		data = HumidRead()
-	elif ChanID == "3" or ChanID == "3\r":
+	elif ChanID == "003" or ChanID == "003\r":
 		data = EEPROMSingleRead(int(msg[1],16),int(msg[2],16))		
-	elif ChanID == "4" or ChanID == "4\r":
+	elif ChanID == "004" or ChanID == "004\r":
 		data = EEPROMSingleWrite(int(msg[1],16),int(msg[2],16),int(msg[3],16))
-	elif ChanID == "5":
+	elif ChanID == "005":
 		data = LED("0",msg[1][:-1])
-	elif ChanID == "6":
+	elif ChanID == "006":
 		data = LED("1",msg[1][:-1])
-	elif ChanID == "7":
+	elif ChanID == "007":
 		data = LED("2",msg[1][:-1])
-	elif ChanID == "8":
+	elif ChanID == "008":
 		data = LED("3",msg[1][:-1])
-	elif ChanID == "9":
+	elif ChanID == "009":
 		data = LED("4",msg[1][:-1])
 	else:
 		data = "Error"
@@ -183,9 +183,11 @@ def ChannelSelect(msg):
 		
 while 1:
 	msg = ser.readline()
+	print msg
 	UARTData = msg.split(",")
 	if UARTData[0] == "128":
 		UARTData.pop(0)
-		print UARTData
+		print "UART Data: "+ str(UARTData)
+		print "No Return: "+ UARTData[0]
 		data = ChannelSelect(UARTData)
-		ser.write(str(UARTData)+","+str(data))	
+		ser.write(UARTData[0]+","+str(data))	
