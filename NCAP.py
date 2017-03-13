@@ -13,7 +13,7 @@ import RPi.GPIO as io
 import thread
 import serial
 
-UART = serial.Serial("/dev/ttyAMA0", baudrate=9600, timeout=0.25)
+UART = serial.Serial("/dev/ttyS0", baudrate=9600, timeout=.25)
 
 io.setmode(io.BCM)
 
@@ -33,6 +33,8 @@ else:
 # UART function
 def readlineCR(port):
 	print 'ReadlineCR'
+
+	"""
         ch = port.read()
         rv = ''
         n = 0
@@ -42,6 +44,8 @@ def readlineCR(port):
                 ch = port.read()
                 n = n + 1
         print  'rv: %s',rv
+	"""
+	rv = UART.readline()
         return rv
 
 
@@ -301,12 +305,16 @@ def ReadTransducerBlockDataFromMultipleChannelsOfMultipleTIMs(timIds, numberOfCh
 
 
 def WriteTransducerSampleDataToAChannelOfATIM(timId, channelId, timeout, samplingMode, dataValue):
+
+        if len(channelId)<2:
+	        channelId='00'+channelId
+        if len(channelId)<3:
+                channelId='0'+channelId
         
-        if channelId == '4':
-                UART.write('001,00'+channelId+','+dataValue+'\r')
-		errorCode = 'p'
-		print('you wrote it')
-		errorCode=readlineCR(UARTport)	
+        UART.write('001,'+channelId+','+dataValue+',\r')
+	errorCode = 'p'
+	print('you wrote it')
+	errorCode=readlineCR(UARTport)	
         return {'errorCode':errorCode}
 
 
@@ -319,6 +327,21 @@ def WriteTransducerBlockDataToAChannelOfATIM(timId, channelId, timeout, numberOf
 		time.sleep(float(sampleInterval)/1000)
 	print errorCode
 	return{'errorCode':errorCode}
+
+
+def WriteTransducerSampleDataToMultipleChannelsOfATIM(timId, channelId, timeout, samplingMode, dataValues):
+        ChannelIDS = channelId.split(";")
+        
+	data = dataValues.split(":")
+        n = 0
+        # We have a flag which allows us to track whether or not the value in question is the first val$
+        FirstValue = 0
+        for ChannelID in ChannelIDS:
+                errorCode = WriteTransducerSampleDataToAChannelOfATIM(timId, ChannelID, timeout, '5', data[n])
+		n = n+1
+		time.sleep(.1)
+        return{'channelId':channelId, 'data':data, 'errorCode':errorCode}
+
 
 
 
@@ -358,6 +381,7 @@ def Thread7109(MSG_Tuple, SenderInfo):
 
 def Thread7211(MSG_Tuple, SenderInfo): 
         MSG = dict(map(None, MSG_Tuple))
+	print MSG
 	if RosterCheck(SenderInfo[1]) == 1:
 		SensorData = ReadTransducerSampleDataFromAChannelOfATIM(MSG['timId'],MSG['channelId'],MSG['timeout'],MSG['samplingMode'])
 		response = MSG['functionId'] + ',' + str(SensorData['errorCode']) + ',' +MSG['ncapId'] + ',' + MSG['timId'] + ',' + MSG['channelId'] + ',' + str(SensorData['data'])
@@ -403,6 +427,16 @@ def Thread7218(MSG_Tuple, SenderInfo):
         response = MSG['functionId']+ ',' + str(ErrorCode['errorCode']) + ',' + MSG['ncapId'] + ',' + MSG['timId'] + ',' + MSG['channelId']
         xmpp_send(str(SenderInfo[1]), response)
 
+def Thread7219(MSG_Tuple, SenderInfo):
+	MSG = dict(map(None, MSG_Tuple))
+	ErrorCode = WriteTransducerSampleDataToMultipleChannelsOfATIM(MSG['timId'], MSG['channelId'], MSG['timeout'], MSG['samplingMode'], MSG['dataValue'])
+	response = MSG['functionId'] + ',' + str(ErrorCode['errorCode']) + ',' + MSG['ncapId'] + ',' + MSG['timId'] + ',' + MSG['channelId']
+	xmpp_send(str(SenderInfo[1]), response)
+
+
+
+
+
 
 
 ###
@@ -445,6 +479,11 @@ def MessageParse(msg):
 	if functionId == '7217':
 		dataValue = parse[6]
 		return {'functionId':functionId, 'ncapId':ncapId, 'timId':timId, 'channelId':channelId, 'timeout':timeout, 'samplingMode':samplingMode, 'dataValue':dataValue}
+        if functionId == '7219':
+                dataValue = parse[6]
+                return {'functionId':functionId, 'ncapId':ncapId, 'timId':timId, 'channelId':channelId, 'timeout':timeout, 'samplingMode':samplingMode, 'dataValue':dataValue}
+
+
 	#errorCode = 1
 	return {'functionId':functionId, 'ncapId':ncapId, 'timId':timId, 'channelId':channelId, 'timeout':timeout, 'samplingMode':samplingMode} 
 
@@ -540,6 +579,8 @@ class EchoBot(sleekxmpp.ClientXMPP):
 	if MSG['functionId'] == '7218':
 		thread.start_new_thread(Thread7218, (tuple(MSG.items()), ('from', msg['from'])))
 
+	if MSG['functionId'] == '7219':
+		thread.start_new_thread(Thread7219, (tuple(MSG.items()), ('from', msg['from'])))
 
 if __name__ == '__main__':
     # Setup the command line arguments.
