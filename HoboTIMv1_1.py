@@ -15,7 +15,7 @@ ser = serial.Serial(
 	parity=serial.PARITY_NONE,
 	stopbits=serial.STOPBITS_ONE,
 	bytesize=serial.EIGHTBITS,
-	timeout=1
+	timeout=.25
 )
 
 
@@ -137,6 +137,8 @@ def LEDColor(Color):
 		return "-1"
 
 
+
+
 #######################################
 # Channel Definitions
 # Each sensor will have its channel in
@@ -145,6 +147,7 @@ def LEDColor(Color):
 #######################################
 
 def ChannelSelect(msg):
+	print "MSG into Channel Select: "+msg[1]
 	ChanID = msg[0]
 	print ChanID
 	if ChanID == "001" or ChanID == "001\r":
@@ -158,15 +161,15 @@ def ChannelSelect(msg):
 	elif ChanID == "004" or ChanID == "004\r":
 		data = EEPROMSingleWrite(int(msg[1],16),int(msg[2],16),int(msg[3],16))
 	elif ChanID == "005":
-		data = LED("0",msg[1][:-1])
+		data = LED("0",msg[1])
 	elif ChanID == "006":
-		data = LED("1",msg[1][:-1])
+		data = LED("1",msg[1])
 	elif ChanID == "007":
-		data = LED("2",msg[1][:-1])
+		data = LED("2",msg[1])
 	elif ChanID == "008":
-		data = LED("3",msg[1][:-1])
+		data = LED("3",msg[1])
 	elif ChanID == "009":
-		data = LED("4",msg[1][:-1])
+		data = LED("4",msg[1])
 	else:
 		data = "Error"
 	return data
@@ -183,11 +186,11 @@ def ChannelSelect(msg):
 		
 while 1:
 	msg = ser.readline()
-	print msg
+	print "MSG: "+msg
 	UARTData = msg.split(",")
-	if UARTData[0] == "128":
+	print "UARTData: "+str(UARTData)
+	if UARTData[0] != '':
 		UARTData.pop(0)
-		print "UART Data: "+ str(UARTData)
-		print "No Return: "+ UARTData[0]
+		print "Popped UARTData: "+str(UARTData)
 		data = ChannelSelect(UARTData)
 		ser.write(UARTData[0]+","+str(data))	
