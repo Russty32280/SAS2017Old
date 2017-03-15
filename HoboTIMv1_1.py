@@ -94,6 +94,7 @@ def LED(LEDNumber, Color):
 		LED0 = LEDColor(Color)
 	elif LEDNumber == "1":
 		print "changing led1"
+		print "Color: "+Color
 		LED1 = LEDColor(Color)
 	elif LEDNumber == "2":
 		LED2 = LEDColor(Color)
@@ -161,15 +162,16 @@ def ChannelSelect(msg):
 	elif ChanID == "004" or ChanID == "004\r":
 		data = EEPROMSingleWrite(int(msg[1],16),int(msg[2],16),int(msg[3],16))
 	elif ChanID == "005":
-		data = LED("0",msg[1])
+		data = LED("0",msg[1].strip())
 	elif ChanID == "006":
-		data = LED("1",msg[1])
+		print msg[1]
+		data = LED("1",msg[1].strip())
 	elif ChanID == "007":
-		data = LED("2",msg[1])
+		data = LED("2",msg[1].strip())
 	elif ChanID == "008":
-		data = LED("3",msg[1])
+		data = LED("3",msg[1].strip())
 	elif ChanID == "009":
-		data = LED("4",msg[1])
+		data = LED("4",msg[1].strip())
 	else:
 		data = "Error"
 	return data
