@@ -149,7 +149,7 @@ def LEDColor(Color):
 #######################################
 
 def ChannelSelect(msg):
-	print "MSG into Channel Select: "+msg[1]
+	print "MSG into Channel Select: "+str(msg)
 	ChanID = msg[0]
 	print ChanID
 	if ChanID == "001" or ChanID == "001\r":
