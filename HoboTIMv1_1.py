@@ -129,10 +129,10 @@ _colors = {
 }
 def LEDColor(Color):
     # Use a small lookup map of common colors 
-	try:
+    try:
         # Try to return user-input.
         return _colors[Color.lower()]
-	except:
+    except:
 		print "Error with Color"
 		return "-1"
 

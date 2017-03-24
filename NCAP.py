@@ -451,8 +451,8 @@ def Thread7219(MSG_Tuple, SenderInfo):
 ##############################################################
 
 def MessageParse(msg):
-	stringy = str(msg['body'])
-	parse = stringy.split(",")
+    stringy = str(msg['body'])
+    parse = stringy.split(",")
     # Create an object to contain various properties.
     #
     # Based on the function id, we can add key=>value pairs
@@ -460,8 +460,8 @@ def MessageParse(msg):
     # return.
     parsedMsg = {}
     parsedMsg['functionId'] = parse[0]
-	print parse[0]
-	if functionId != '7108' and functionId != '7109':
+    print parse[0]
+    if functionId != '7108' and functionId != '7109':
         parsedMsg['ncapId'] = parse[1]
         parsedMsg['timId'] = parse[2]
         parsedMsg['channelId'] = parse[3]
@@ -482,8 +482,8 @@ def MessageParse(msg):
             parsedMsg['samplingMode'] = parse[5]
             if functionId == '7217' or functionId == '7219':
                 parsedMsg['dataValue'] = parse[6]
-	#errorCode = 1
-	return parsedMsg
+    #errorCode = 1
+    return parsedMsg
 
 ################################################################
 
