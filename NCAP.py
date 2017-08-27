@@ -83,7 +83,7 @@ def NCAPClientUnJoin(NCAP_ID):
         root = tree.getroot()
 
         # We need to replace this name with the jid from an incoming message
-       # print name
+        # print name
 
         # This message needs to be extracted from the sleekxmpp library
         #message = msg['body']
@@ -137,7 +137,7 @@ def NCAPClientJoin(NCAP_ID):
     root = tree.getroot()
 
     # We need to replace this name with the jid from an incoming message
-   # print name
+    # print name
 
     # This message needs to be extracted from the sleekxmpp library
     #message = msg['body']
@@ -306,9 +306,9 @@ def ReadTransducerBlockDataFromMultipleChannelsOfMultipleTIMs(timIds, numberOfCh
 
 def WriteTransducerSampleDataToAChannelOfATIM(timId, channelId, timeout, samplingMode, dataValue):
 
-        if len(channelId)<2:
+        if len(channelId) < 2:
 	        channelId='00'+channelId
-        if len(channelId)<3:
+        if len(channelId) < 3:
                 channelId='0'+channelId
         
         UART.write('001,'+channelId+','+dataValue+',\r')
@@ -451,41 +451,39 @@ def Thread7219(MSG_Tuple, SenderInfo):
 ##############################################################
 
 def MessageParse(msg):
-	stringy = str(msg['body'])
-	parse = stringy.split(",")
-	functionId = parse[0]
-	print functionId
-	if functionId == '7108' or functionId == '7109':
-		return {'functionId':functionId}
-	ncapId =  parse[1]
-	timId =  parse[2]
-	channelId =  parse[3]
-#	if functionId == '7421':
-#	    minMaxThreshold = parse[4]
-#	    sensorAlertSubscriber = parse[5]
-#       samplingRate=parse[6]
-#       return {'functionId':functionId, 'ncapId':ncapId, 'timId':timId, 'channelId':channelId, 'minMaxThreshold':minMaxThreshold, 'sensorAlertSubscriber':sensorAlertSubscriber, 'samplingRate':samplingRate }
-	timeout =  parse[4]
-	if functionId == '7212' or functionId == '7214' or functionId == '7218':
-		#print 'I am in the nested if statement'
-		numberOfSamples = parse[5]
-		sampleInterval = parse[6]
-		startTime = parse[7]
-		if functionId == '7218':
-			dataValue = parse[8]
-			return {'functionId':functionId, 'ncapId':ncapId, 'timId':timId, 'channelId':channelId, 'timeout':timeout, 'numberOfSamples':numberOfSamples, 'sampleInterval':sampleInterval, 'startTime':startTime, 'dataValue':dataValue}
-		return {'functionId':functionId, 'ncapId':ncapId, 'timId':timId, 'channelId':channelId, 'timeout':timeout, 'numberOfSamples':numberOfSamples, 'sampleInterval':sampleInterval, 'startTime':startTime}
-	samplingMode = parse[5]
-	if functionId == '7217':
-		dataValue = parse[6]
-		return {'functionId':functionId, 'ncapId':ncapId, 'timId':timId, 'channelId':channelId, 'timeout':timeout, 'samplingMode':samplingMode, 'dataValue':dataValue}
-        if functionId == '7219':
-                dataValue = parse[6]
-                return {'functionId':functionId, 'ncapId':ncapId, 'timId':timId, 'channelId':channelId, 'timeout':timeout, 'samplingMode':samplingMode, 'dataValue':dataValue}
-
-
-	#errorCode = 1
-	return {'functionId':functionId, 'ncapId':ncapId, 'timId':timId, 'channelId':channelId, 'timeout':timeout, 'samplingMode':samplingMode} 
+    stringy = str(msg['body'])
+    parse = stringy.split(",")
+    # Create an object to contain various properties.
+    #
+    # Based on the function id, we can add key=>value pairs
+    # until the processing is complete and we are ready to
+    # return.
+    parsedMsg = {}
+    parsedMsg['functionId'] = parse[0]
+    print parse[0]
+    if functionId != '7108' and functionId != '7109':
+        parsedMsg['ncapId'] = parse[1]
+        parsedMsg['timId'] = parse[2]
+        parsedMsg['channelId'] = parse[3]
+        #	if functionId == '7421':
+        #	    minMaxThreshold = parse[4]
+        #	    sensorAlertSubscriber = parse[5]
+        #       samplingRate=parse[6]
+        #       return {'functionId':functionId, 'ncapId':ncapId, 'timId':timId, 'channelId':channelId, 'minMaxThreshold':minMaxThreshold, 'sensorAlertSubscriber':sensorAlertSubscriber, 'samplingRate':samplingRate }
+        parsedMsg['timeout'] = parse[4]
+        if functionId == '7212' or functionId == '7214' or functionId == '7218':
+            #print 'I am in the nested if statement'
+            parsedMsg['numberOfSamples'] = parse[5]
+            parsedMsg['sampleInterval'] = parse[6]
+            parsedMsg['startTime'] = parse[7]
+            if functionId == '7218':
+                parsedMsg['dataValue'] = parse[8]
+        else:
+            parsedMsg['samplingMode'] = parse[5]
+            if functionId == '7217' or functionId == '7219':
+                parsedMsg['dataValue'] = parse[6]
+    #errorCode = 1
+    return parsedMsg
 
 ################################################################
 
@@ -543,44 +541,19 @@ class EchoBot(sleekxmpp.ClientXMPP):
                    how it may be used.
         """
         if msg['type'] in ('chat', 'normal'):
-	   print 'Recieved Message'
+	        print 'Recieved Message'
         MSG = MessageParse(msg)
-	   #jabberid=msg['from']
-	   #RC=RosterCheck(ncapId)
-       # if(RC==0):
-       #     xmpp_send(str(SenderInfo[1]), response)
-	   
-	if MSG['functionId']=='7108':
-		print 'Recieved a 7108 message'
-		thread.start_new_thread(Thread7108, (tuple(MSG.items()), ('from', msg['from'])))
-
-        if MSG['functionId']=='7109':
-                print 'Recieved a 7109 message'
-                thread.start_new_thread(Thread7109, (tuple(MSG.items()), ('from', msg['from'])))
-	
-
-	if MSG['functionId'] == '7211':
-		print 'Recieved a 7211 Message'
-	        thread.start_new_thread(Thread7211, (tuple(MSG.items()), ('from', msg['from'])))
-
-	if MSG['functionId'] == '7212':
-		thread.start_new_thread(Thread7212, (tuple(MSG.items()), ('from', msg['from'])))
-
-	if MSG['functionId'] == '7213':
-		thread.start_new_thread(Thread7213, (tuple(MSG.items()), ('from', msg['from'])))
-
-	if MSG['functionId'] == '7214':
-		thread.start_new_thread(Thread7214, (tuple(MSG.items()), ('from', msg['from'])))
-
-
-        if MSG['functionId'] == '7217':
-                thread.start_new_thread(Thread7217, (tuple(MSG.items()), ('from', msg['from'])))
-
-	if MSG['functionId'] == '7218':
-		thread.start_new_thread(Thread7218, (tuple(MSG.items()), ('from', msg['from'])))
-
-	if MSG['functionId'] == '7219':
-		thread.start_new_thread(Thread7219, (tuple(MSG.items()), ('from', msg['from'])))
+	    #jabberid=msg['from']
+	    #RC=RosterCheck(ncapId)
+        # if(RC==0):
+        #     xmpp_send(str(SenderInfo[1]), response)
+        
+        try:
+            # Generates thread based on functionid creating a function
+            thread.start_new_thread(locals()['Thread' + MSG['functionId']], (tuple(MSG.items()), ('from', msg['from'])))
+        except:
+	        # Cannot find valid function
+            print "Cannot find Thread" + MSG['functionId']
 
 if __name__ == '__main__':
     # Setup the command line arguments.

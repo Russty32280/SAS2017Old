@@ -117,24 +117,22 @@ def LED(LEDNumber, Color):
 	bus.write_byte_data(LEDAddress, 0x09, LS3) 
 	return "0"
 
+_colors = {
+    'red': 0b000001,
+    'green': 0b000100,
+    'blue': 0b010000,
+    'purple': 0b010001,
+    'white': 0b010101,
+    'yellow': 0b000101,
+    'cyan': 0b010100,
+    'off': 0b000000
+}
 def LEDColor(Color):
-	if Color == "Red":
-		return 0b000001
-	elif Color == "Green":
-		return 0b000100
-	elif Color == "Blue":
-		return 0b010000
-	elif Color == "Purple":
-		return 0b010001
-	elif Color == "White":
-		return 0b010101
-	elif Color == "Yellow":
-		return 0b000101
-	elif Color == "Cyan":
-		return 0b010100
-	elif Color == "Off":
-		return 0b000000
-	else:
+    # Use a small lookup map of common colors 
+    try:
+        # Try to return user-input.
+        return _colors[Color.lower()]
+    except:
 		print "Error with Color"
 		return "-1"
 
@@ -150,17 +148,17 @@ def LEDColor(Color):
 
 def ChannelSelect(msg):
 	print "MSG into Channel Select: "+str(msg)
-	ChanID = msg[0]
+	ChanID = msg[0].strip()
 	print ChanID
-	if ChanID == "001" or ChanID == "001\r":
+	if ChanID == "001":
 		print "Chan1 Read"
 		data = TempRead()
-	elif ChanID == "002" or ChanID == "002\r":
+	elif ChanID == "002":
 		print "Chan2 Read"
 		data = HumidRead()
-	elif ChanID == "003" or ChanID == "003\r":
+	elif ChanID == "003":
 		data = EEPROMSingleRead(int(msg[1],16),int(msg[2],16))		
-	elif ChanID == "004" or ChanID == "004\r":
+	elif ChanID == "004":
 		data = EEPROMSingleWrite(int(msg[1],16),int(msg[2],16),int(msg[3],16))
 	elif ChanID == "005":
 		data = LED("0",msg[1].strip())
